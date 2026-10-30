@@ -1,0 +1,6 @@
+{
+  "name": "SignFlow - Digital Contract Signing & Execution",
+  "description": "Secure UI template for electronic contract signing, document confirmation, drawn digital signatures, and version audit history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
