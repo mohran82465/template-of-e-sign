@@ -2,9 +2,8 @@ import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { mockUser, mockContract } from './mockData';
 import { ActiveOption, ConfirmationMethod, ToastMessage, ContractVersion } from './types';
 import { useContractVersions } from './hooks/useContractVersions';
-import { TermsModal } from './components/TermsModal';
 import { ContractDocument } from './components/ContractDocument';
-import { ConfirmationPanel } from './components/ConfirmationPanel';
+import { SignatureModal } from './components/SignatureModal';
 import { VersionHistory } from './components/VersionHistory';
 import { ToastContainer } from './components/Toast';
 import { exportElementToPdf } from './utils/pdfExport';
@@ -20,15 +19,11 @@ import {
   Lock,
   Layers,
   Sparkles,
-  HelpCircle,
+  PenLine,
 } from 'lucide-react';
 
 export default function App() {
-  // 1. Terms Modal state: starts open on load as blocking modal
-  const [isTermsModalOpen, setIsTermsModalOpen] = useState(true);
-  const [hasAcceptedTermsOnce, setHasAcceptedTermsOnce] = useState(false);
-
-  // 2. Versioning Hook
+  // 1. Versioning Hook
   const {
     versions,
     latestVersion,
@@ -40,8 +35,11 @@ export default function App() {
     clearAllVersions,
   } = useContractVersions(mockContract);
 
-  // 3. Version History Drawer state
+  // 2. Version History Drawer state
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
+
+  // 3. Signature Modal (Option B) popup state
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
   // 4. Execution panel state (Option A vs Option B)
   const [activeOption, setActiveOption] = useState<ActiveOption>('confirm');
@@ -79,13 +77,6 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Handle Terms Accept
-  const handleAcceptTerms = () => {
-    setIsTermsModalOpen(false);
-    setHasAcceptedTermsOnce(true);
-    addToast('Terms Accepted', 'You have granted electronic records consent.', 'info');
-  };
-
   // Option switching: "Switching options resets the other option's state."
   const handleOptionChange = (newOption: ActiveOption) => {
     setActiveOption(newOption);
@@ -103,10 +94,39 @@ export default function App() {
     setIsConfirmedChecked(checked);
   };
 
-  // Option B signature apply
+  // Option B signature apply: immediately applies signature mark and saves the document
   const handleApplySignature = (dataUrl: string) => {
+    setActiveOption('signature');
+    setIsConfirmedChecked(false);
     setAppliedSignatureUrl(dataUrl);
-    addToast('Signature Applied', 'Your handwritten mark has been positioned in the contract.', 'success');
+
+    // Save document version automatically on apply
+    const saved = saveVersion({
+      method: 'signed',
+      signerName: mockUser.fullName,
+      signerEmail: mockUser.email,
+      signerIdNumber: mockUser.idNumber,
+      signDate: todayFormattedDate,
+      signatureImage: dataUrl,
+      contractSnapshot: mockContract,
+    });
+
+    addToast(
+      `Contract signed & saved as ${saved.versionLabel}`,
+      `Audited record archived on ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} with cryptographic hash.`,
+      'success'
+    );
+
+    // Celebratory confetti
+    try {
+      confetti({
+        particleCount: 55,
+        spread: 60,
+        origin: { y: 0.7 },
+      });
+    } catch {
+      // Ignore if unavailable
+    }
   };
 
   // Option B clear signature
@@ -114,48 +134,9 @@ export default function App() {
     setAppliedSignatureUrl(null);
   };
 
-  // Is current draft filled/ready?
-  const isCurrentDraftFilled = activeOption === 'confirm' ? isConfirmedChecked : !!appliedSignatureUrl;
-  const isSaveEnabled = isCurrentDraftFilled && !isViewingPastVersion;
-
   // Next version label
   const nextVersionNumber = versions.length > 0 ? versions[0].versionNumber + 1 : 1;
   const nextVersionLabel = `v${nextVersionNumber}`;
-
-  // Handle saving the contract version
-  const handleSaveContract = () => {
-    if (!isSaveEnabled) return;
-
-    const method: ConfirmationMethod = activeOption === 'confirm' ? 'confirmed' : 'signed';
-
-    const saved = saveVersion({
-      method,
-      signerName: mockUser.fullName,
-      signerEmail: mockUser.email,
-      signerIdNumber: mockUser.idNumber,
-      signDate: todayFormattedDate,
-      signatureImage: method === 'signed' && appliedSignatureUrl ? appliedSignatureUrl : undefined,
-      contractSnapshot: mockContract,
-    });
-
-    // Success notification exactly as requested: "Contract saved as v2"
-    addToast(
-      `Contract saved as ${saved.versionLabel}`,
-      `Audited record archived on ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} with SHA-256 hash.`,
-      'success'
-    );
-
-    // Micro celebratory confetti
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-      });
-    } catch {
-      // Ignore if unavailable
-    }
-  };
 
   // Handle PDF Export
   const handleDownloadPdf = async (targetVersion?: ContractVersion) => {
@@ -188,32 +169,32 @@ export default function App() {
     }
   };
 
-  // Derived display values depending on whether viewing a historical version or active draft
-  const displayClientName = isViewingPastVersion
-    ? activeViewingVersion?.signerName || ''
-    : isCurrentDraftFilled
+  // Derived display values depending on whether viewing a historical version or active state
+  const activeVersionOrLatest = activeViewingVersion || latestVersion;
+
+  const displayClientName = activeVersionOrLatest
+    ? activeVersionOrLatest.signerName
+    : appliedSignatureUrl
     ? mockUser.fullName
     : '';
 
-  const displaySignDate = isViewingPastVersion
-    ? activeViewingVersion?.signDate || ''
-    : isCurrentDraftFilled
+  const displaySignDate = activeVersionOrLatest
+    ? activeVersionOrLatest.signDate
+    : appliedSignatureUrl
     ? todayFormattedDate
     : '';
 
-  const displaySignatureImage = isViewingPastVersion
-    ? activeViewingVersion?.signatureImage || null
-    : appliedSignatureUrl;
+  const displaySignatureImage = activeViewingVersion
+    ? activeViewingVersion.signatureImage || null
+    : appliedSignatureUrl || latestVersion?.signatureImage || null;
 
-  const displayMethod: ConfirmationMethod | 'none' = isViewingPastVersion
-    ? activeViewingVersion?.method || 'none'
-    : isCurrentDraftFilled
-    ? activeOption === 'confirm'
-      ? 'confirmed'
-      : 'signed'
+  const displayMethod: ConfirmationMethod | 'none' = activeVersionOrLatest
+    ? activeVersionOrLatest.method
+    : appliedSignatureUrl
+    ? 'signed'
     : 'none';
 
-  const isDisplayFilled = isViewingPastVersion || isCurrentDraftFilled;
+  const isDisplayFilled = isViewingPastVersion || !!latestVersion || !!appliedSignatureUrl;
 
   // Header version badge text near title
   const currentVersionBadgeText = isViewingPastVersion
@@ -224,14 +205,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100/90 text-slate-900 flex flex-col font-sans">
-      {/* 1. Terms & Conditions Modal (blocking on load) */}
-      <TermsModal
-        isOpen={isTermsModalOpen}
-        onAccept={handleAcceptTerms}
-        userFullName={mockUser.fullName}
-      />
-
-      {/* 2. Version History Drawer */}
+      {/* 1. Version History Drawer */}
       <VersionHistory
         isOpen={isHistoryDrawerOpen}
         onClose={() => setIsHistoryDrawerOpen(false)}
@@ -241,6 +215,17 @@ export default function App() {
         onReturnToCurrent={returnToCurrent}
         onDownloadVersionPdf={handleDownloadPdf}
         onClearHistory={clearAllVersions}
+      />
+
+      {/* 2. Option B Signature Modal Popup */}
+      <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        user={mockUser}
+        onApplySignature={handleApplySignature}
+        onClearSignature={handleClearSignature}
+        appliedSignatureUrl={appliedSignatureUrl}
+        nextVersionLabel={nextVersionLabel}
       />
 
       {/* 3. Toast Notifications */}
@@ -267,18 +252,20 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right actions: User pill, History button, PDF export */}
+          {/* Right actions: Option B button (big screens), History button, PDF export */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Review terms link */}
-            <button
-              type="button"
-              onClick={() => setIsTermsModalOpen(true)}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-              title="Review Terms & Conditions Disclosure"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-              <span>Review Terms</span>
-            </button>
+            {/* Option B Add Signature button - shown at the top of the screen on big screens */}
+            {!isViewingPastVersion && (
+              <button
+                type="button"
+                onClick={() => setIsSignatureModalOpen(true)}
+                className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-xs cursor-pointer border border-indigo-500/50 hover:shadow-indigo-500/20 active:scale-[0.98]"
+                title="Draw and affix signature (Option B)"
+              >
+                <PenLine className="w-3.5 h-3.5 text-indigo-200" />
+                <span>{versions.length > 0 ? 'Sign New Version (Option B)' : 'Add Signature (Option B)'}</span>
+              </button>
+            )}
 
             {/* Version History Button */}
             <button
@@ -295,18 +282,20 @@ export default function App() {
               )}
             </button>
 
-            {/* Print / Download Button */}
-            <button
-              type="button"
-              onClick={() => handleDownloadPdf()}
-              disabled={isExportingPdf}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">
-                {isExportingPdf ? 'Exporting...' : 'Download PDF'}
-              </span>
-            </button>
+            {/* Print / Download Button - Only visible once the document has been saved */}
+            {versions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => handleDownloadPdf()}
+                disabled={isExportingPdf}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">
+                  {isExportingPdf ? 'Exporting...' : 'Download PDF'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -340,20 +329,17 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CONTENT AREA */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 flex-1 w-full">
-        {/* Two-column layout on desktop: Contract Document on left/center, Sticky Confirmation Panel on right */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          
-          {/* LEFT: Contract Paper Document View */}
-          <div className="w-full lg:flex-1 flex flex-col items-center">
-            {/* Helper status strip above paper */}
-            <div className="w-full max-w-[820px] mb-3 flex items-center justify-between text-xs text-slate-500 no-print">
-              <div className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>Commercial Standard Form AGR-2026</span>
-              </div>
-              <div className="flex items-center gap-3">
+      {/* MAIN CONTENT AREA - Centered Contract Document */}
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-6 flex-1 w-full flex flex-col items-center">
+        {/* Helper status strip above paper */}
+        <div className="w-full max-w-[820px] mb-3 flex items-center justify-between text-xs text-slate-500 no-print">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Commercial Standard Form AGR-2026</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {versions.length > 0 && (
+              <>
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -363,62 +349,40 @@ export default function App() {
                   <span>Print preview</span>
                 </button>
                 <span>•</span>
-                <span>Zoom: 100% (A4)</span>
-              </div>
-            </div>
-
-            {/* The Document */}
-            <ContractDocument
-              contract={mockContract}
-              isFilled={isDisplayFilled}
-              clientName={displayClientName}
-              signDate={displaySignDate}
-              signatureImage={displaySignatureImage}
-              method={displayMethod}
-              versionBadgeText={currentVersionBadgeText}
-              isHistoricalView={isViewingPastVersion}
-              historicalDate={activeViewingVersion?.timestamp}
-              auditHash={activeViewingVersion?.auditHash}
-              documentRef={documentRef}
-            />
+              </>
+            )}
+            <span>Zoom: 100% (A4)</span>
           </div>
-
-          {/* RIGHT: Confirmation & Execution Panel (Sticky on desktop, stacked on mobile) */}
-          <aside className="w-full lg:w-96 lg:sticky lg:top-24 shrink-0 no-print space-y-4">
-            <ConfirmationPanel
-              user={mockUser}
-              activeOption={activeOption}
-              onChangeOption={handleOptionChange}
-              isConfirmedChecked={isConfirmedChecked}
-              onToggleConfirmChecked={handleToggleConfirmChecked}
-              appliedSignatureUrl={appliedSignatureUrl}
-              onApplySignature={handleApplySignature}
-              onClearSignature={handleClearSignature}
-              onSaveContract={handleSaveContract}
-              isSaveEnabled={isSaveEnabled}
-              nextVersionLabel={nextVersionLabel}
-              isReadOnlyPastVersion={isViewingPastVersion}
-              pastVersionLabel={activeViewingVersion?.versionLabel}
-              onReturnToCurrent={returnToCurrent}
-            />
-
-            {/* Quick Audit & Security Guarantee Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 text-xs text-slate-600 space-y-2.5 shadow-2xs">
-              <div className="flex items-center gap-2 text-slate-900 font-semibold">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Legally Binding Digital Protocol</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-slate-500">
-                This transaction adheres to the Electronic Signatures in Global and National Commerce Act (E-SIGN) and UETA guidelines. Each version snapshot is tamper-sealed and persisted to localStorage.
-              </p>
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Total Saved Versions:</span>
-                <span className="font-mono font-bold text-slate-800">{versions.length}</span>
-              </div>
-            </div>
-          </aside>
         </div>
+
+        {/* The Document */}
+        <ContractDocument
+          contract={mockContract}
+          isFilled={isDisplayFilled}
+          clientName={displayClientName}
+          signDate={displaySignDate}
+          signatureImage={displaySignatureImage}
+          method={displayMethod}
+          versionBadgeText={currentVersionBadgeText}
+          isHistoricalView={isViewingPastVersion}
+          historicalDate={activeViewingVersion?.timestamp}
+          auditHash={activeViewingVersion?.auditHash}
+          documentRef={documentRef}
+        />
       </main>
+
+      {/* Floating Option B "Add Signature" button on mobile / smaller screens */}
+      {!isViewingPastVersion && (
+        <button
+          type="button"
+          onClick={() => setIsSignatureModalOpen(true)}
+          className="lg:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-indigo-400/30"
+          aria-label="Draw and affix signature (Option B)"
+        >
+          <PenLine className="w-4 h-4 text-indigo-200" />
+          <span>{versions.length > 0 ? 'Signature' : 'Add Signature '}</span>
+        </button>
+      )}
 
       {/* FOOTER */}
       <footer className="mt-auto border-t border-slate-200 bg-white py-6 text-xs text-slate-500 no-print">
@@ -431,12 +395,7 @@ export default function App() {
             <span className="text-slate-400">Client: {mockUser.fullName}</span>
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <button
-              onClick={() => setIsTermsModalOpen(true)}
-              className="hover:text-slate-700 underline cursor-pointer"
-            >
-              Electronic Disclosure Terms
-            </button>
+            <span>Electronic Records Protocol</span>
             <span>•</span>
             <span>TLS 1.3 Certified</span>
           </div>

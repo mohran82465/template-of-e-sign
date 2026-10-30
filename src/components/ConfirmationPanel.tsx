@@ -1,7 +1,6 @@
 import React from 'react';
 import { ActiveOption, User } from '../types';
-import { SignaturePad } from './SignaturePad';
-import { CheckCircle2, FileCheck, PenLine, Save, User as UserIcon, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, FileCheck, PenLine, Save, ShieldAlert, ArrowLeft, Trash2, Edit3, Sparkles } from 'lucide-react';
 
 interface ConfirmationPanelProps {
   user: User;
@@ -10,7 +9,7 @@ interface ConfirmationPanelProps {
   isConfirmedChecked: boolean;
   onToggleConfirmChecked: (checked: boolean) => void;
   appliedSignatureUrl: string | null;
-  onApplySignature: (dataUrl: string) => void;
+  onOpenSignatureModal: () => void;
   onClearSignature: () => void;
   onSaveContract: () => void;
   isSaveEnabled: boolean;
@@ -27,7 +26,7 @@ export const ConfirmationPanel: React.FC<ConfirmationPanelProps> = ({
   isConfirmedChecked,
   onToggleConfirmChecked,
   appliedSignatureUrl,
-  onApplySignature,
+  onOpenSignatureModal,
   onClearSignature,
   onSaveContract,
   isSaveEnabled,
@@ -63,6 +62,8 @@ export const ConfirmationPanel: React.FC<ConfirmationPanelProps> = ({
     );
   }
 
+  const hasSignature = !!appliedSignatureUrl;
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-5">
       {/* Signer Identity Header Card */}
@@ -87,66 +88,26 @@ export const ConfirmationPanel: React.FC<ConfirmationPanelProps> = ({
         </div>
       </div>
 
-      {/* Execution Method Selector: Option A vs Option B */}
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-          Select Execution Method
-        </label>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {/* Option A card */}
-          <button
-            type="button"
-            onClick={() => onChangeOption('confirm')}
-            className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between cursor-pointer relative ${
-              activeOption === 'confirm'
-                ? 'border-indigo-600 bg-indigo-50/50 shadow-xs ring-1 ring-indigo-500'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900">
-                <FileCheck className="w-4 h-4 text-indigo-600" />
-                Option A — Confirm
-              </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-indigo-100 text-indigo-800">
-                Default
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
-              Confirm agreement without drawing a signature mark.
-            </p>
-          </button>
-
-          {/* Option B card */}
-          <button
-            type="button"
-            onClick={() => onChangeOption('signature')}
-            className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between cursor-pointer relative ${
-              activeOption === 'signature'
-                ? 'border-indigo-600 bg-indigo-50/50 shadow-xs ring-1 ring-indigo-500'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900">
-                <PenLine className="w-4 h-4 text-indigo-600" />
-                Option B — Add Signature
-              </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700">
-                Optional
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
-              Draw and affix your personal handwritten signature mark.
-            </p>
-          </button>
+      {/* Main Execution Flow: Option A (Confirm) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+            <FileCheck className="w-4 h-4 text-indigo-600" />
+            <span>Option A — Confirmation</span>
+          </span>
+          <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+            Primary
+          </span>
         </div>
-      </div>
 
-      {/* Option A Body */}
-      {activeOption === 'confirm' && (
-        <div className="p-4 rounded-xl border border-indigo-100 bg-indigo-50/30 space-y-3 animate-fade-in">
+        {/* Option A Confirmation Checkbox */}
+        <div
+          className={`p-4 rounded-xl border transition-all ${
+            isConfirmedChecked && !hasSignature
+              ? 'border-indigo-300 bg-indigo-50/50 shadow-xs'
+              : 'border-slate-200 bg-white hover:border-slate-300'
+          }`}
+        >
           <label
             htmlFor="confirm-contract-checkbox"
             className="flex items-start gap-3 cursor-pointer select-none"
@@ -154,8 +115,15 @@ export const ConfirmationPanel: React.FC<ConfirmationPanelProps> = ({
             <input
               id="confirm-contract-checkbox"
               type="checkbox"
-              checked={isConfirmedChecked}
-              onChange={(e) => onToggleConfirmChecked(e.target.checked)}
+              checked={isConfirmedChecked && !hasSignature}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onToggleConfirmChecked(true);
+                  onChangeOption('confirm');
+                } else {
+                  onToggleConfirmChecked(false);
+                }
+              }}
               className="mt-1 w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer"
             />
             <div className="space-y-1">
@@ -163,42 +131,79 @@ export const ConfirmationPanel: React.FC<ConfirmationPanelProps> = ({
                 I confirm that I have read and agree to this contract.
               </span>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                By ticking this box, your legal name (<strong className="text-slate-800">{user.fullName}</strong>) and current execution timestamp will be automatically inscribed into the document as a binding electronic affirmation.
+                Checking this box auto-fills your legal name (<strong className="text-slate-800">{user.fullName}</strong>) and execution date into the contract.
               </p>
             </div>
           </label>
 
-          {isConfirmedChecked && (
-            <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-emerald-800 text-xs">
+          {isConfirmedChecked && !hasSignature && (
+            <div className="mt-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-emerald-800 text-xs animate-fade-in">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Contract placeholders have been populated with your electronic confirmation.</span>
+              <span>Contract confirmed electronically. Ready to save!</span>
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Option B Body */}
-      {activeOption === 'signature' && (
-        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3.5 animate-fade-in">
-          <SignaturePad
-            onApplySignature={onApplySignature}
-            onClearSignature={onClearSignature}
-            appliedSignatureUrl={appliedSignatureUrl}
-          />
+      {/* Option B Status & Popup Trigger Card */}
+      {hasSignature ? (
+        <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-3 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+              <PenLine className="w-4 h-4 text-emerald-600" />
+              <span>Option B — Signature Attached</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              Active
+            </span>
+          </div>
 
-          {appliedSignatureUrl && (
-            <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between text-emerald-800 text-xs">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Your handwritten signature is embedded into the contract.</span>
-              </div>
+          <div className="p-3 bg-white rounded-lg border border-emerald-200 flex items-center justify-between gap-3 shadow-2xs">
+            <img
+              src={appliedSignatureUrl}
+              alt="Applied Signature"
+              className="h-10 max-w-[160px] object-contain"
+            />
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={onOpenSignatureModal}
+                className="px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-md border border-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
+                title="Redraw signature"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>Edit</span>
+              </button>
+              <button
+                type="button"
+                onClick={onClearSignature}
+                className="px-2.5 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-md border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"
+                title="Remove signature"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Remove</span>
+              </button>
             </div>
-          )}
+          </div>
+          <p className="text-[11px] text-emerald-800">
+            Handwritten mark embedded into contract clause & signature block.
+          </p>
+        </div>
+      ) : (
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={onOpenSignatureModal}
+            className="w-full py-2.5 px-3.5 rounded-xl border border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/40 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer group"
+          >
+            <PenLine className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
+            <span>Prefer to draw a signature? Open Option B</span>
+          </button>
         </div>
       )}
 
       {/* Primary Action Button: Save Contract */}
-      <div className="pt-2 space-y-2">
+      <div className="pt-2 space-y-2 border-t border-slate-100">
         <button
           type="button"
           onClick={onSaveContract}
@@ -218,7 +223,7 @@ export const ConfirmationPanel: React.FC<ConfirmationPanelProps> = ({
         </button>
 
         <p className="text-[11px] text-center text-slate-500">
-          Saving stores an immutable, audited snapshot to your local version history ledger.
+          Saving generates an audited snapshot in your version history ledger.
         </p>
       </div>
     </div>

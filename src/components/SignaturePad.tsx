@@ -7,6 +7,7 @@ interface SignaturePadProps {
   onClearSignature: () => void;
   appliedSignatureUrl: string | null;
   disabled?: boolean;
+  applyButtonLabel?: string;
 }
 
 export const SignaturePad: React.FC<SignaturePadProps> = ({
@@ -14,6 +15,7 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   onClearSignature,
   appliedSignatureUrl,
   disabled = false,
+  applyButtonLabel = 'Apply & Save Contract',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padInstanceRef = useRef<SignaturePadLib | null>(null);
@@ -211,7 +213,7 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
           className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Eraser className="w-3.5 h-3.5" />
-          <span>Clear Canvas</span>
+          <span>Clear</span>
         </button>
 
         <button
@@ -225,7 +227,7 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
           }`}
         >
           <Check className="w-3.5 h-3.5" />
-          <span>Apply Signature</span>
+          <span>{applyButtonLabel}</span>
         </button>
       </div>
 
