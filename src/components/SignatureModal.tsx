@@ -71,7 +71,7 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
           <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 flex items-start gap-2.5">
             <UserCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
             <p>
-              Draw your signature using mouse, stylus, or finger. Clicking <strong className="text-indigo-950">"Apply & Save Contract"</strong> will immediately inscribe your signature onto the document and save it as <span className="font-mono font-bold text-indigo-800">{nextVersionLabel}</span>.
+              Draw your signature using mouse, stylus, or finger. Clicking <strong className="text-indigo-950">"Save"</strong> will immediately inscribe your signature onto the document and save it as <span className="font-mono font-bold text-indigo-800">{nextVersionLabel}</span>.
             </p>
           </div>
 

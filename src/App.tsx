@@ -228,44 +228,31 @@ export default function App() {
       {/* TOP APPLICATION BAR */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Brand & Document Name */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-700 to-slate-900 text-white flex items-center justify-center font-bold shadow-xs">
-              <FileText className="w-5 h-5 text-indigo-200" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm tracking-tight text-slate-900">SignFlow</span>
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                  {currentVersionBadgeText}
-                </span>
+          {/* Left: Brand, Document Title & History Button */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-700 to-slate-900 text-white flex items-center justify-center font-bold shadow-xs">
+                <FileText className="w-5 h-5 text-indigo-200" />
               </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-sm">
-                {mockContract.title.en} · {mockContract.title.ar}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm tracking-tight text-slate-900">SignFlow</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                    {currentVersionBadgeText}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-sm">
+                  {mockContract.title.en} · {mockContract.title.ar}
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Right actions: Option B button (big screens), History button, PDF export */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Option B Add Signature button - shown at the top of the screen on big screens */}
-            {!isViewingPastVersion && (
-              <button
-                type="button"
-                onClick={() => setIsSignatureModalOpen(true)}
-                className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-xs cursor-pointer border border-indigo-500/50 hover:shadow-indigo-500/20 active:scale-[0.98]"
-                title="Draw and affix signature (Option B)"
-              >
-                <PenLine className="w-3.5 h-3.5 text-indigo-200" />
-                <span>{versions.length > 0 ? 'Sign New Version (Option B)' : 'Add Signature (Option B)'}</span>
-              </button>
-            )}
-
-            {/* Version History Button */}
+            {/* Version History Button - Placed on the left */}
             <button
               type="button"
               onClick={() => setIsHistoryDrawerOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors cursor-pointer border border-slate-200"
+              title="View History"
             >
               <History className="w-3.5 h-3.5 text-indigo-600" />
               <span>History</span>
@@ -275,6 +262,22 @@ export default function App() {
                 </span>
               )}
             </button>
+          </div>
+
+          {/* Right actions: Sign button and Download PDF button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Option B Add Signature button - shown at the top of the screen on big screens */}
+            {!isViewingPastVersion && (
+              <button
+                type="button"
+                onClick={() => setIsSignatureModalOpen(true)}
+                className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-xs cursor-pointer border border-indigo-500/50 hover:shadow-indigo-500/20 active:scale-[0.98]"
+                title="Sign"
+              >
+                <PenLine className="w-3.5 h-3.5 text-indigo-200" />
+                <span>Sign</span>
+              </button>
+            )}
 
             {/* Print / Download Button - Only visible once the document has been saved */}
             {versions.length > 0 && (
@@ -362,16 +365,16 @@ export default function App() {
         />
       </main>
 
-      {/* Floating Option B "Add Signature" button on mobile / smaller screens */}
+      {/* Floating Option B "Sign" button on mobile / smaller screens */}
       {!isViewingPastVersion && (
         <button
           type="button"
           onClick={() => setIsSignatureModalOpen(true)}
           className="no-print lg:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-indigo-400/30"
-          aria-label="Draw and affix signature (Option B)"
+          aria-label="Sign"
         >
           <PenLine className="w-4 h-4 text-indigo-200" />
-          <span>{versions.length > 0 ? 'Signature' : 'Add Signature '}</span>
+          <span>Sign</span>
         </button>
       )}
 
