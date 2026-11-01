@@ -6,32 +6,93 @@ export interface User {
   avatarUrl?: string;
 }
 
-export interface ContractClause {
-  number: number;
-  title: string;
-  body: string;
+export interface BilingualText {
+  en: string;
+  ar: string;
 }
 
-export interface ContractParty {
-  role: string;
+export interface ContractClause {
+  number: string;
+  title: BilingualText;
+  body: BilingualText;
+}
+
+export interface ContractProperty {
   name: string;
-  entityType?: string;
-  address?: string;
-  email?: string;
-  idNumber?: string;
+  legalName: string;
+  vatNumber: string;
+  crNumber: string;
+  shortAddress: string;
+  phone: string;
+  tourismLicence: string;
+  representedBy: string;
+  representativeName: string;
+  representativeTitle: string;
+}
+
+export interface ContractGuest {
+  name: string;
+  idDisplay: string;
+  nationality: string;
+  mobile: string;
+}
+
+export interface ContractStay {
+  unit: string;
+  category: string;
+  arrival: string;
+  departure: string;
+  nights: string;
+  occupancy: string;
+  ratePlan: string;
+  mealPlan: string;
+}
+
+export interface ContractLineItem {
+  label: BilingualText;
+  rate: string;
+  amount: string;
+  isPlaceholder?: boolean;
+}
+
+export interface ContractFinancials {
+  lineItems: ContractLineItem[];
+  total: string;
+  advanceDeposit: string;
+  balance: string;
+  securityDeposit: string;
+  acceptedPayment: string;
+}
+
+export interface ContractPolicy {
+  title: BilingualText;
+  reference: string;
+  body: BilingualText;
+}
+
+export interface ContractAcceptance {
+  via: string;
+  at: string;
+  witnessedBy: string;
+  id: string;
 }
 
 export interface ContractData {
   id: string;
-  title: string;
+  title: BilingualText;
   contractNumber: string;
+  reservationNumber: string;
   date: string;
-  parties: {
-    serviceProvider: ContractParty;
-    client: ContractParty;
-  };
+  termsVersion: string;
+  property: ContractProperty;
+  guest: ContractGuest;
+  stay: ContractStay;
+  financials: ContractFinancials;
+  policies: ContractPolicy[];
   clauses: ContractClause[];
-  securityStamp?: string;
+  acceptance: ContractAcceptance;
+  printedBy: string;
+  printedAt: string;
 }
 
 export type ConfirmationMethod = 'confirmed' | 'signed';

@@ -55,9 +55,9 @@ export default function App() {
 
   // Format today's date for live insertion
   const todayFormattedDate = useMemo(() => {
-    return new Date().toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
+    return new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
       year: 'numeric',
     });
   }, []);
@@ -156,7 +156,7 @@ export default function App() {
     addToast('Generating PDF Document', 'Rendering high-resolution vector snapshot...', 'info');
 
     const vLabel = activeViewingVersion ? activeViewingVersion.versionLabel : latestVersion ? latestVersion.versionLabel : 'draft';
-    const fileName = `Contract-${mockContract.contractNumber}-${vLabel}.pdf`;
+    const fileName = `Contract-${mockContract.reservationNumber}-${vLabel}.pdf`;
 
     try {
       await exportElementToPdf(element, fileName);
@@ -171,12 +171,6 @@ export default function App() {
 
   // Derived display values depending on whether viewing a historical version or active state
   const activeVersionOrLatest = activeViewingVersion || latestVersion;
-
-  const displayClientName = activeVersionOrLatest
-    ? activeVersionOrLatest.signerName
-    : appliedSignatureUrl
-    ? mockUser.fullName
-    : '';
 
   const displaySignDate = activeVersionOrLatest
     ? activeVersionOrLatest.signDate
@@ -247,7 +241,7 @@ export default function App() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-sm">
-                {mockContract.title}
+                {mockContract.title.en} · {mockContract.title.ar}
               </p>
             </div>
           </div>
@@ -335,7 +329,7 @@ export default function App() {
         <div className="w-full max-w-[820px] mb-3 flex items-center justify-between text-xs text-slate-500 no-print">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Commercial Standard Form AGR-2026</span>
+            <span>{mockContract.title.en} {mockContract.reservationNumber}</span>
           </div>
           <div className="flex items-center gap-3">
             {versions.length > 0 && (
@@ -359,14 +353,11 @@ export default function App() {
         <ContractDocument
           contract={mockContract}
           isFilled={isDisplayFilled}
-          clientName={displayClientName}
           signDate={displaySignDate}
           signatureImage={displaySignatureImage}
           method={displayMethod}
-          versionBadgeText={currentVersionBadgeText}
-          isHistoricalView={isViewingPastVersion}
-          historicalDate={activeViewingVersion?.timestamp}
-          auditHash={activeViewingVersion?.auditHash}
+          acceptedAt={activeVersionOrLatest?.timestamp}
+          auditHash={activeVersionOrLatest?.auditHash}
           documentRef={documentRef}
         />
       </main>
@@ -376,7 +367,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => setIsSignatureModalOpen(true)}
-          className="lg:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-indigo-400/30"
+          className="no-print lg:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-indigo-400/30"
           aria-label="Draw and affix signature (Option B)"
         >
           <PenLine className="w-4 h-4 text-indigo-200" />

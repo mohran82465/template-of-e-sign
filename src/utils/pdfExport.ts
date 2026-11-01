@@ -6,35 +6,28 @@ export async function exportElementToPdf(
   fileName: string = 'Contract-Agreement.pdf'
 ): Promise<boolean> {
   try {
-    // Generate high-resolution canvas capture
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-    });
-
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const pages = Array.from(element.querySelectorAll<HTMLElement>('[data-pdf-page]'));
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // Capture each contract page separately so no text is cut at a page break
+    for (const [index, page] of pages.entries()) {
+      const canvas = await html2canvas(page, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
 
-    let heightLeft = imgHeight;
-    let position = 0;
+      // Fit inside A4: pages rendered on narrow screens are taller than A4 ratio
+      const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
-    // First page
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
-
-    // Remaining pages if contract is multi-page
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      if (index > 0) {
+        pdf.addPage();
+      }
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width * ratio, canvas.height * ratio);
     }
 
     pdf.save(fileName);

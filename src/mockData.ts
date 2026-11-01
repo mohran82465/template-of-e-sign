@@ -1,77 +1,171 @@
 import { User, ContractData } from './types';
 
 export const mockUser: User = {
-  fullName: 'Ahmed Ali',
+  fullName: 'عبدالرحمن سويلم الحربي',
   email: 'ahmed@example.com',
   idNumber: '1234567890',
-  role: 'Authorized Principal / Client Signatory',
+  role: 'Guest',
 };
 
 export const mockContract: ContractData = {
-  id: 'contract-master-2026-8842',
-  title: 'Master Commercial Services & Engagement Agreement',
-  contractNumber: 'AGR-2026-8842-EMEA',
-  date: 'October 30, 2026',
-  parties: {
-    serviceProvider: {
-      role: 'Service Provider',
-      name: 'Nexus Cloud Enterprise Solutions Ltd.',
-      entityType: 'Delaware Corporation',
-      address: '450 Innovation Parkway, Suite 1200, San Francisco, CA 94107',
-      email: 'legal@nexuscloud.io',
-      idNumber: 'US-EIN-94-3829104',
-    },
-    client: {
-      role: 'Client & Counterparty',
-      name: '{{CLIENT_NAME}}',
-      address: '742 Evergreen Terrace, Sector 4, Capital District',
-      email: 'ahmed@example.com',
-      idNumber: '1234567890',
-    },
+  id: 'contract-reservation-2026-00001',
+  title: { en: 'Reservation Contract', ar: 'عقد الحجز' },
+  contractNumber: 'CON-2026-00001',
+  reservationNumber: 'RES-2026-00001',
+  date: '24 Oct 2026',
+  termsVersion: 'v3 · eff. 01 Oct 2026',
+  property: {
+    name: 'Riyadh Demo Suites',
+    legalName: 'Riyadh Demo Hospitality Co.',
+    vatNumber: '300000000000003',
+    crNumber: '1010000000',
+    shortAddress: 'Olaya St, Riyadh',
+    phone: '+966 11 000 0000',
+    tourismLicence: 'TL-0000000',
+    representedBy: 'Khalid Al-Otaibi, General Manager',
+    representativeName: 'Khalid Al-Otaibi',
+    representativeTitle: 'General Manager',
   },
-  clauses: [
+  guest: {
+    name: mockUser.fullName,
+    idDisplay: 'National ID •••• 7890',
+    nationality: 'Saudi',
+    mobile: '+966 50 000 0000',
+  },
+  stay: {
+    unit: 'Room 200',
+    category: 'Deluxe Room',
+    arrival: '24 Oct 2026 · 15:00',
+    departure: '02 Nov 2026 · 12:00',
+    nights: '9',
+    occupancy: '1 adult, 0 children',
+    ratePlan: 'Best Available Rate',
+    mealPlan: 'Room Only',
+  },
+  financials: {
+    lineItems: [
+      {
+        label: { en: 'Accommodation · 9 nights', ar: 'الإقامة · 9 ليالٍ' },
+        rate: '100.00',
+        amount: '900.00',
+      },
+      {
+        label: { en: 'Occupancy Fee', ar: 'رسوم الإشغال' },
+        rate: '0%',
+        amount: '0.00',
+      },
+      {
+        label: { en: 'VAT', ar: 'ضريبة القيمة المضافة' },
+        rate: '0%',
+        amount: '0.00',
+      },
+    ],
+    total: '900.00',
+    advanceDeposit: '900.00',
+    balance: '0.00',
+    securityDeposit: '0.00',
+    acceptedPayment: 'Cash · Mada · Card',
+  },
+  policies: [
     {
-      number: 1,
-      title: 'Engagement & Scope of Services',
-      body: 'Nexus Cloud Enterprise Solutions Ltd. ("Provider") agrees to perform the digital architecture, cloud engineering, and technical advisory services as set forth herein. Client {{CLIENT_NAME}} hereby retains Provider as an independent contractor, subject to the agreed performance milestones and standards of care standard in the technology industry.',
+      title: { en: 'Cancellation', ar: 'الإلغاء' },
+      reference: 'Standard Cancellation · v2',
+      body: {
+        en: 'Free cancellation until 48 hours before arrival. Later cancellations are charged 1 night.',
+        ar: 'إلغاء مجاني حتى 48 ساعة قبل الوصول، ويُحتسب بعدها ليلة واحدة.',
+      },
     },
     {
-      number: 2,
-      title: 'Term, Duration & Renewal',
-      body: 'This Agreement shall commence on {{SIGN_DATE}} ("Effective Date") and shall remain in full force and effect for an initial period of twelve (12) consecutive months, unless terminated earlier in accordance with Clause 7. Upon conclusion of the initial term, this Agreement shall automatically renew for successive one-year intervals unless either party delivers written notice of non-renewal at least thirty (30) days prior.',
+      title: { en: 'No-show', ar: 'عدم الحضور' },
+      reference: 'Standard No-show · v1',
+      body: {
+        en: 'First night charged; remaining nights released.',
+        ar: 'تُحتسب الليلة الأولى وتُلغى بقية الليالي.',
+      },
     },
     {
-      number: 3,
-      title: 'Fees, Invoicing & Electronic Invoicing Schedule',
-      body: 'Client {{CLIENT_NAME}} shall remit payment within thirty (30) calendar days following receipt of an undisputed itemized invoice. Late disbursements shall accrue statutory interest at the rate of one and one-half percent (1.5%) per month or the highest permissible lawful threshold. All statutory taxes or cross-border levies applicable to the services shall be borne directly by Client.',
-    },
-    {
-      number: 4,
-      title: 'Intellectual Property Ownership & Work Product',
-      body: 'All pre-existing intellectual property belonging to each respective party prior to the execution of this Agreement on {{SIGN_DATE}} shall remain the exclusive property of that party. All deliverables, customized software repositories, and technical documentation authored specifically for Client upon receipt of full remuneration shall vest irrevocably in {{CLIENT_NAME}}.',
-    },
-    {
-      number: 5,
-      title: 'Confidentiality & Non-Disclosure Covenants',
-      body: 'Each party warrants and undertakes to maintain the strictest confidence regarding all proprietary technical, financial, or commercial disclosures received from the other party. The obligations under this clause shall survive the termination or expiration of this Agreement for a period of five (5) consecutive years from {{SIGN_DATE}}.',
-    },
-    {
-      number: 6,
-      title: 'Warranties, Disclaimers & Limitation of Liability',
-      body: 'Provider covenants that all work product will be conducted in a workmanlike and diligent manner consistent with prevailing industrial standards. Except as expressly stated herein, both parties disclaim all other implied warranties. Under no circumstances shall either party be liable to the other for indirect, special, punitive, or consequential damages.',
-    },
-    {
-      number: 7,
-      title: 'Termination for Cause & Convenience',
-      body: 'Either party may terminate this Agreement without cause upon giving forty-five (45) days advance written notice. In the event of a material breach by either party that remains uncured for fifteen (15) business days following written notice, the non-breaching party may immediately terminate this Agreement with written effect.',
-    },
-    {
-      number: 8,
-      title: 'Governing Law, Jurisdiction & Binding Electronic Execution',
-      body: 'This Agreement shall be governed by, and construed in accordance with, the laws of the State of Delaware, without giving effect to conflict of laws principles. The parties agree that electronic confirmation or electronic signatures affixed via {{SIGNATURE}} on {{SIGN_DATE}} carry the same binding legal force and admissibility as original wet-ink signatures.',
+      title: { en: 'Deposit', ar: 'الدفعة المقدمة' },
+      reference: 'Full Prepayment · v1',
+      body: {
+        en: '100% of the stay is due at confirmation.',
+        ar: 'يُستحق 100% من قيمة الإقامة عند التأكيد.',
+      },
     },
   ],
-  securityStamp: 'CRYPTOGRAPHIC-VERIFIED-SHA256-SIGNFLOW-AUTH',
+  clauses: [
+    {
+      number: '5.1',
+      title: { en: 'Check-in and check-out', ar: 'الدخول والمغادرة' },
+      body: {
+        en: 'Check-in is from 15:00 on the arrival date and check-out is by 12:00 on the departure date. Late check-out depends on availability and may be charged.',
+        ar: 'يبدأ تسجيل الدخول من الساعة 15:00 في تاريخ الوصول، ويكون تسجيل الخروج قبل الساعة 12:00 في تاريخ المغادرة. يخضع تأخير المغادرة للتوفر وقد تترتب عليه رسوم.',
+      },
+    },
+    {
+      number: '5.2',
+      title: { en: 'Use of the unit', ar: 'استخدام الوحدة' },
+      body: {
+        en: 'The unit is for the named guests only, up to the stated occupancy. It may not be sublet, transferred, or used for any purpose other than residence.',
+        ar: 'الوحدة مخصصة للضيوف المذكورين فقط وبحد أقصى الإشغال المحدد، ولا يجوز تأجيرها من الباطن أو التنازل عنها أو استخدامها لغير غرض السكن.',
+      },
+    },
+    {
+      number: '5.3',
+      title: { en: 'Conduct and identification', ar: 'السلوك والهوية' },
+      body: {
+        en: "The guest follows the property's house rules and the laws of the Kingdom of Saudi Arabia, and presents a valid ID for every guest at check-in.",
+        ar: 'يلتزم الضيف بأنظمة المنشأة الداخلية وأنظمة المملكة العربية السعودية، ويقدم هوية سارية لكل ضيف عند تسجيل الدخول.',
+      },
+    },
+    {
+      number: '5.4',
+      title: { en: 'Damage and security deposit', ar: 'الأضرار ومبلغ التأمين' },
+      body: {
+        en: 'The guest is liable for loss or damage caused during the stay. Any security deposit is refunded at check-out after inspection, less agreed deductions.',
+        ar: 'يتحمل الضيف مسؤولية أي فقدان أو تلف يقع خلال الإقامة، ويُسترد مبلغ التأمين عند المغادرة بعد المعاينة مخصوماً منه أي استقطاعات مستحقة.',
+      },
+    },
+    {
+      number: '5.5',
+      title: { en: 'Early departure and extension', ar: 'المغادرة المبكرة والتمديد' },
+      body: {
+        en: 'Leaving early follows the cancellation policy in section 4. Extending the stay depends on availability and is charged at the rate in force at the time.',
+        ar: 'تخضع المغادرة المبكرة لسياسة الإلغاء الواردة في البند 4، ويخضع تمديد الإقامة للتوفر وبالسعر المعمول به حينها.',
+      },
+    },
+    {
+      number: '5.6',
+      title: { en: 'Personal data', ar: 'البيانات الشخصية' },
+      body: {
+        en: 'Personal data is processed under the Personal Data Protection Law (PDPL) for registration, billing, and mandatory reporting to government platforms.',
+        ar: 'تُعالج البيانات الشخصية وفق نظام حماية البيانات الشخصية لأغراض التسجيل والفوترة والإبلاغ النظامي للمنصات الحكومية.',
+      },
+    },
+    {
+      number: '5.7',
+      title: { en: 'Terms and conditions', ar: 'الشروط والأحكام' },
+      body: {
+        en: "The property's Terms & Conditions, version v3, form part of this contract. If the two texts differ, the Arabic text prevails.",
+        ar: 'تُعد الشروط والأحكام الخاصة بالمنشأة، الإصدار v3، جزءاً لا يتجزأ من هذا العقد، وفي حال الاختلاف بين النصين يُعتمد النص العربي.',
+      },
+    },
+    {
+      number: '5.8',
+      title: { en: 'Governing law', ar: 'النظام الواجب التطبيق' },
+      body: {
+        en: 'This contract is governed by the laws of the Kingdom of Saudi Arabia. Disputes are referred to the competent authorities in Riyadh.',
+        ar: 'يخضع هذا العقد لأنظمة المملكة العربية السعودية، وتُحال أي نزاعات إلى الجهات المختصة في الرياض.',
+      },
+    },
+  ],
+  acceptance: {
+    via: 'Signature / OTP',
+    at: 'Pending',
+    witnessedBy: 'Noura Al-Qahtani',
+    id: 'Pending',
+  },
+  printedBy: 'Noura Al-Qahtani',
+  printedAt: '24 Oct 2026, 14:30',
 };
 
 export const mockTermsAndConditions = [
@@ -83,7 +177,7 @@ export const mockTermsAndConditions = [
   {
     heading: '2. Identity Verification & Authorized Capacity',
     content:
-      'You hereby represent, covenant, and warrant that you are the individual identified in this transaction (Ahmed Ali, ID: 1234567890), that you are at least eighteen (18) years of age, and that you possess full legal capacity and corporate authority to bind yourself and/or your designated entity to all covenants and obligations set forth in the underlying contract document.',
+      `You hereby represent, covenant, and warrant that you are the individual identified in this transaction (${mockUser.fullName}, ID: ${mockUser.idNumber}), that you are at least eighteen (18) years of age, and that you possess full legal capacity and corporate authority to bind yourself and/or your designated entity to all covenants and obligations set forth in the underlying contract document.`,
   },
   {
     heading: '3. Technical Requirements & Record Retention',
