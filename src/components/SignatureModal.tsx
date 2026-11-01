@@ -1,6 +1,6 @@
 import React from 'react';
 import { SignaturePad } from './SignaturePad';
-import { PenLine, X, ShieldCheck, UserCheck, CheckCircle2 } from 'lucide-react';
+import { PenLine, X, ShieldCheck } from 'lucide-react';
 import { User } from '../types';
 
 interface SignatureModalProps {
@@ -67,14 +67,7 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-4">
-          <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 flex items-start gap-2.5">
-            <UserCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-            <p>
-              Draw your signature using mouse, stylus, or finger. Clicking <strong className="text-indigo-950">"Save"</strong> will immediately inscribe your signature onto the document and save it as <span className="font-mono font-bold text-indigo-800">{nextVersionLabel}</span>.
-            </p>
-          </div>
-
+        <div className="p-6">
           {/* Signature canvas */}
           <SignaturePad
             onApplySignature={handleApply}

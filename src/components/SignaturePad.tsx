@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import SignaturePadLib from 'signature_pad';
-import { Eraser, Check, RotateCcw, PenTool, Sparkles } from 'lucide-react';
+import { Eraser, Check, RotateCcw, PenTool } from 'lucide-react';
 
 interface SignaturePadProps {
   onApplySignature: (dataUrl: string) => void;
@@ -230,13 +230,6 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
           <span>{applyButtonLabel}</span>
         </button>
       </div>
-
-      {hasUnappliedStrokes && (
-        <p className="text-[11px] text-amber-600 flex items-center gap-1 bg-amber-50 p-2 rounded-lg border border-amber-200">
-          <Sparkles className="w-3.5 h-3.5 shrink-0" />
-          <span>Click <strong>"Apply Signature"</strong> to update the contract document with your new signature mark.</span>
-        </p>
-      )}
     </div>
   );
 };
