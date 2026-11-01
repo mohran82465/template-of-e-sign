@@ -4,6 +4,7 @@ import { ActiveOption, ConfirmationMethod, ToastMessage, ContractVersion } from 
 import { useContractVersions } from './hooks/useContractVersions';
 import { ContractDocument } from './components/ContractDocument';
 import { SignatureModal } from './components/SignatureModal';
+import { SuccessModal } from './components/SuccessModal';
 import { VersionHistory } from './components/VersionHistory';
 import { ToastContainer } from './components/Toast';
 import { exportElementToPdf } from './utils/pdfExport';
@@ -40,6 +41,9 @@ export default function App() {
 
   // 3. Signature Modal (Option B) popup state
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+
+  // 4. Success Modal popup state
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   // 4. Execution panel state (Option A vs Option B)
   const [activeOption, setActiveOption] = useState<ActiveOption>('confirm');
@@ -116,6 +120,9 @@ export default function App() {
       `Audited record archived on ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} with cryptographic hash.`,
       'success'
     );
+
+    // Show success popup
+    setIsSuccessModalOpen(true);
 
     // Celebratory confetti
     try {
@@ -197,6 +204,8 @@ export default function App() {
     ? `${latestVersion.versionLabel} (Latest Saved)`
     : 'Draft (Unsaved)';
 
+  const signButtonLabel = versions.length > 0 ? 'Update Sign' : 'Sign';
+
   return (
     <div className="min-h-screen bg-slate-100/90 text-slate-900 flex flex-col font-sans">
       {/* 1. Version History Drawer */}
@@ -222,7 +231,18 @@ export default function App() {
         nextVersionLabel={nextVersionLabel}
       />
 
-      {/* 3. Toast Notifications */}
+      {/* 3. Signed Success Modal Popup */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        onDownloadPdf={() => handleDownloadPdf()}
+        reservationNumber={mockContract.reservationNumber}
+        contractNumber={mockContract.contractNumber}
+        guestName={mockUser.fullName}
+        versionLabel={latestVersion ? latestVersion.versionLabel : nextVersionLabel}
+      />
+
+      {/* 4. Toast Notifications */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       {/* TOP APPLICATION BAR */}
@@ -272,10 +292,10 @@ export default function App() {
                 type="button"
                 onClick={() => setIsSignatureModalOpen(true)}
                 className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-xs cursor-pointer border border-indigo-500/50 hover:shadow-indigo-500/20 active:scale-[0.98]"
-                title="Sign"
+                title={signButtonLabel}
               >
                 <PenLine className="w-3.5 h-3.5 text-indigo-200" />
-                <span>Sign</span>
+                <span>{signButtonLabel}</span>
               </button>
             )}
 
@@ -371,10 +391,10 @@ export default function App() {
           type="button"
           onClick={() => setIsSignatureModalOpen(true)}
           className="no-print lg:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-indigo-400/30"
-          aria-label="Sign"
+          aria-label={signButtonLabel}
         >
           <PenLine className="w-4 h-4 text-indigo-200" />
-          <span>Sign</span>
+          <span>{signButtonLabel}</span>
         </button>
       )}
 
